@@ -4,7 +4,7 @@
  * Uses bulk time-series endpoints — ~20 API calls total regardless of date range.
  *
  * Usage:
- *   node sync.js                              # last 30 days
+ *   node sync.js                              # last 2 days
  *   node sync.js --from 2022-01-01            # backfill from date
  *   node sync.js --from 2022-01-01 --to 2024-12-31
  *   node sync.js --intraday                   # also fetch Saturday intraday HR (hike window analysis)
@@ -36,7 +36,7 @@ const toIdx = args.indexOf("--to");
 
 const today = new Date();
 const defaultFrom = new Date(today);
-defaultFrom.setDate(today.getDate() - 30);
+defaultFrom.setDate(today.getDate() - 2);
 
 const fromDate = fromIdx !== -1 ? args[fromIdx + 1] : isoDate(defaultFrom);
 const toDate = toIdx !== -1 ? args[toIdx + 1] : isoDate(today);
