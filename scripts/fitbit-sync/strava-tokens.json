@@ -1,0 +1,9 @@
+{
+  "access_token": "f7cadb348b82d93caca4d852efa5dc563141658f",
+  "refresh_token": "9f0bcf1ccca0becce56e9f00731b6105e96c4902",
+  "expires_at": 1776647734000,
+  "athlete": {
+    "id": 98688229,
+    "name": "Muhammad Umair"
+  }
+}

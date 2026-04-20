@@ -1,0 +1,24 @@
+# Strava activity type plausibility for hiking
+plausible_activity_types:
+  - Hike
+  - Walk
+  - TrailRun
+  - Run
+
+# Distance/elevation plausibility for group hikes
+hike_distance_km_min: 5.0
+hike_distance_km_max: 30.0
+hike_elevation_m_min: 100
+hike_elevation_m_max: 2500
+
+# Time window for hike start (local time, hour)
+hike_start_hour_min: 5
+hike_start_hour_max: 10
+
+# Confidence boosts
+boosts:
+  type_is_hike: 0.15
+  start_time_in_window: 0.10
+  distance_plausible: 0.10
+  elevation_plausible: 0.10
+  kudos_present: 0.05

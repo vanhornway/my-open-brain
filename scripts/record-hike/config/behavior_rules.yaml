@@ -1,0 +1,16 @@
+# Weights for Phase 1 scoring (daily aggregate mode)
+# Each weight is applied to a 0-1 normalized score for that feature
+weights:
+  steps_vs_baseline: 0.30
+  active_minutes_vs_baseline: 0.25
+  strain_vs_baseline: 0.20
+  calories_vs_baseline: 0.10
+  hr_zone_elevation: 0.10  # hr_zone_3+4+5 proportion
+  recovery_score_inverse: 0.05  # lower recovery after hard day = consistent
+
+# Soft minimum day-level thresholds (if below, cap contribution)
+minimums:
+  steps_minimum: 8000
+  active_minutes_minimum: 60
+  strain_minimum: 10.0
+  calories_minimum: 400

@@ -1,0 +1,9 @@
+{
+  "name": "fitbit-sync",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync.js",
+    "sync:all": "node sync.js --from 2022-01-01"
+  }
+}

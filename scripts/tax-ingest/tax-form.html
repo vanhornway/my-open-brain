@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Optimizer — Umair</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7; color: #1d1d1f;
+      padding: 40px 16px 100px;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #6e6e73; font-size: 15px; margin-bottom: 32px; }
+
+    .section {
+      background: #fff; border-radius: 16px; padding: 28px;
+      margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+    .section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #6e6e73; margin-bottom: 20px;
+    }
+    .section.warning { border-left: 4px solid #ff9500; }
+    .section.info    { border-left: 4px solid #0071e3; }
+    .section.success { border-left: 4px solid #34c759; }
+
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    label { display: block; font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+    .hint { font-size: 12px; color: #6e6e73; margin-bottom: 7px; line-height: 1.55; }
+
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 2px 6px; border-radius: 4px; margin-right: 5px;
+      font-family: "SF Mono", monospace;
+    }
+    .badge.blue   { background: #e8f4ff; color: #0071e3; }
+    .badge.orange { background: #fff3e0; color: #b45309; }
+    .badge.green  { background: #e4f5ec; color: #1a7f4b; }
+    .badge.red    { background: #ffe5e5; color: #c0392b; }
+
+    input[type="number"], input[type="text"], select, textarea {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #d2d2d7; border-radius: 10px;
+      font-size: 15px; background: #fff;
+      transition: border-color .15s; -moz-appearance: textfield;
+      font-family: inherit;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #0071e3; }
+    textarea { resize: vertical; min-height: 70px; }
+
+    .row  { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    .toggle-group { display: flex; gap: 10px; }
+    .toggle-group label { flex: 1; margin: 0; }
+    .toggle-group input[type="radio"] { display: none; }
+    .toggle-btn {
+      display: block; text-align: center; padding: 10px;
+      border: 1.5px solid #d2d2d7; border-radius: 10px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      background: #fff; transition: all .15s;
+    }
+    .toggle-group input[type="radio"]:checked + .toggle-btn {
+      background: #0071e3; border-color: #0071e3; color: #fff;
+    }
+
+    .checkbox-field { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+    .checkbox-field input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; }
+    .checkbox-field label { font-size: 14px; font-weight: 400; margin: 0; line-height: 1.5; }
+    .checkbox-field .sublabel { font-size: 12px; color: #6e6e73; }
+
+    .conditional { display: none; }
+    .conditional.visible { display: block; }
+
+    .property-box {
+      border: 1.5px solid #e8e8ed; border-radius: 12px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .property-box:last-child { margin-bottom: 0; }
+    .property-header {
+      font-size: 14px; font-weight: 700; color: #1d1d1f;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .warn-box {
+      background: #fff3e0; border-radius: 10px; padding: 14px 16px;
+      margin: 12px 0; font-size: 13px; line-height: 1.6; color: #7d4b00;
+    }
+    .info-box {
+      background: #e8f4ff; border-radius: 10px; padding: 14px 16px;
+      margin: 12px 0; font-size: 13px; line-height: 1.6; color: #003d80;
+    }
+    .good-box {
+      background: #e4f5ec; border-radius: 10px; padding: 14px 16px;
+      margin: 12px 0; font-size: 13px; line-height: 1.6; color: #0d5c2e;
+    }
+
+    .divider { border: none; border-top: 1px solid #f0f0f5; margin: 18px 0; }
+
+    button[type="submit"] {
+      width: 100%; padding: 16px; background: #0071e3; color: #fff;
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+      cursor: pointer; margin-top: 4px;
+    }
+    button[type="submit"]:disabled { background: #a0c4f0; cursor: not-allowed; }
+
+    .status-msg { font-size: 13px; color: #6e6e73; margin-top: 10px; text-align: center; }
+    .error { color: #ff3b30 !important; }
+
+    /* Results */
+    #result { display: none; margin-top: 24px; }
+    #result.visible { display: block; }
+
+    .result-card {
+      background: #fff; border-radius: 16px; padding: 28px;
+      margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+    .result-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; }
+
+    .bracket-display { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .bracket-pill {
+      background: #ff3b30; color: #fff; border-radius: 50px;
+      padding: 10px 22px; font-size: 26px; font-weight: 800; flex-shrink: 0;
+    }
+    .bracket-pill.b35 { background: #ff6b00; }
+    .bracket-pill.b32 { background: #ff9500; }
+    .bracket-pill.b24 { background: #f0b800; color: #1d1d1f; }
+    .bracket-pill.b22 { background: #34c759; }
+    .bracket-pill.b12 { background: #30d158; }
+    .bracket-meta { font-size: 14px; color: #3d3d3f; line-height: 1.7; }
+
+    .summary-row {
+      display: flex; justify-content: space-between;
+      padding: 9px 0; font-size: 14px; border-bottom: 1px solid #f0f0f5;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: #6e6e73; }
+    .summary-value { font-weight: 600; }
+    .summary-value.good { color: #1a7f4b; }
+    .summary-value.warn { color: #b45309; }
+    .summary-value.bad  { color: #c0392b; }
+
+    .strategy-list { list-style: none; }
+    .strategy-item {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 14px 0; border-bottom: 1px solid #f0f0f5; gap: 12px;
+    }
+    .strategy-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .strategy-left { flex: 1; }
+    .strategy-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .strategy-desc { font-size: 12px; color: #6e6e73; line-height: 1.5; }
+    .strategy-cta  { font-size: 11px; color: #0071e3; margin-top: 5px; }
+    .strategy-right { text-align: right; min-width: 100px; }
+    .strategy-save { font-size: 15px; font-weight: 700; color: #1a7f4b; }
+    .strategy-sub  { font-size: 11px; color: #6e6e73; margin-top: 2px; }
+
+    .rental-status-box {
+      border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+    }
+    .rental-status-box.locked   { background: #ffe5e5; border: 1.5px solid #ffb3b3; }
+    .rental-status-box.partial  { background: #fff3e0; border: 1.5px solid #ffd099; }
+    .rental-status-box.unlocked { background: #e4f5ec; border: 1.5px solid #a3e0bc; }
+
+    details { margin-bottom: 18px; }
+    details summary { font-size: 13px; color: #6e6e73; cursor: pointer; padding: 6px 0; }
+    .cfg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+
+    @media (max-width: 540px) {
+      .row, .row3, .cfg { grid-template-columns: 1fr; }
+      .bracket-display { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Tax Optimizer — Umair</h1>
+  <p class="subtitle">Personalized for your situation: Google income, RSUs, 2 rental properties, DAF strategy.</p>
+
+  <details>
+    <summary>⚙️ Supabase connection (optional — for saving)</summary>
+    <div class="cfg">
+      <div class="field">
+        <label>Supabase URL</label>
+        <input type="text" id="cfg-url" value="https://epckjiufeimydxmcrfus.supabase.co" />
+      </div>
+      <div class="field">
+        <label>Service Role Key</label>
+        <input type="text" id="cfg-key" placeholder="eyJ…" />
+      </div>
+    </div>
+  </details>
+
+  <form id="tax-form">
+
+    <!-- ══ 1. YEAR & STATUS ══════════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">Tax Year & Filing</div>
+      <div class="row">
+        <div class="field">
+          <label>Tax Year</label>
+          <select id="tax_year" required onchange="onYearChange()">
+            <option value="2027">2027 — Planning ahead</option>
+            <option value="2026" selected>2026 — Planning ahead</option>
+            <option value="2025">2025 — Planning ahead</option>
+            <option value="2024">2024 — Completed</option>
+            <option value="2023">2023 — Completed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Filing Status</label>
+          <select id="filing_status" required>
+            <option value="MFJ" selected>Married Filing Jointly</option>
+            <option value="Single">Single</option>
+            <option value="MFS">Married Filing Separately</option>
+            <option value="HOH">Head of Household</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="toggle-group">
+          <label>
+            <input type="radio" name="mode" value="plan" checked onchange="onModeChange()" />
+            <span class="toggle-btn">Planning this year</span>
+          </label>
+          <label>
+            <input type="radio" name="mode" value="actual" onchange="onModeChange()" />
+            <span class="toggle-btn">Completed year (actual)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2. INCOME ════════════════════════════════════════════════ -->
+    <div class="section" id="section-planning">
+      <div class="section-title">W-2 Income — Estimated (from pay stub)</div>
+
+      <div class="field">
+        <label>Annual Base Salary</label>
+        <div class="hint">Your yearly salary. From your offer letter, latest pay stub header, or HR portal.</div>
+        <input type="number" id="base_salary" placeholder="0" min="0" oninput="estimateIncome()" />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>YTD Gross Wages</label>
+          <div class="hint"><span class="badge orange">Pay stub</span> "YTD Gross" or "YTD Earnings" on your most recent pay stub.</div>
+          <input type="number" id="ytd_wages" placeholder="0" min="0" oninput="estimateIncome()" />
+        </div>
+        <div class="field">
+          <label>Gross Per Paycheck</label>
+          <div class="hint"><span class="badge orange">Pay stub</span> Your gross amount each pay period, before deductions.</div>
+          <input type="number" id="gross_per_paycheck" placeholder="0" min="0" oninput="estimateIncome()" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Pay Periods Remaining This Year</label>
+          <div class="hint">Biweekly = 26/yr. Semi-monthly = 24/yr. How many left?</div>
+          <input type="number" id="pay_periods_remaining" placeholder="0" min="0" max="30" oninput="estimateIncome()" />
+        </div>
+        <div class="field">
+          <label>Projected Total W-2 Wages</label>
+          <div class="hint">Auto-calculated from above, or override.</div>
+          <input type="number" id="projected_wages" placeholder="auto" min="0" />
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="row">
+        <div class="field">
+          <label>RSU Value Vested YTD ($)</label>
+          <div class="hint"><span class="badge orange">Pay stub</span> Look for "RSU" or "Stock" in your YTD earnings. Taxed as ordinary income when vested — included in W-2 Box 1.</div>
+          <input type="number" id="rsu_ytd" placeholder="0" min="0" oninput="estimateIncome()" />
+        </div>
+        <div class="field">
+          <label>Remaining RSU Vests This Year ($)</label>
+          <div class="hint">Shares × current GOOGL price. Check Schwab Equity Award Center for upcoming vest dates.</div>
+          <input type="number" id="rsu_remaining" placeholder="0" min="0" oninput="estimateIncome()" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Expected Bonus This Year ($)</label>
+        <div class="hint">Peer bonus, performance bonus, or 0 if none expected.</div>
+        <input type="number" id="bonus" placeholder="0" min="0" oninput="estimateIncome()" />
+      </div>
+    </div>
+
+    <div class="section" id="section-actual" style="display:none;">
+      <div class="section-title">W-2 & Investment Income — Actual</div>
+      <div class="field">
+        <label>W-2 Wages (Box 1)</label>
+        <div class="hint"><span class="badge blue">W2 Box 1</span> Total compensation — salary + bonus + RSUs vested. Do not include rental income here.</div>
+        <input type="number" id="wages_actual" placeholder="0" min="0" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Long-Term Capital Gains</label>
+          <div class="hint"><span class="badge blue">1040 Schedule D Line 16</span></div>
+          <input type="number" id="cap_gains_lt" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>Short-Term Capital Gains</label>
+          <div class="hint"><span class="badge blue">1040 Schedule D Line 7</span></div>
+          <input type="number" id="cap_gains_st" placeholder="0" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Ordinary Dividends</label>
+        <div class="hint"><span class="badge blue">1040 Line 3b</span></div>
+        <input type="number" id="dividends_ordinary" placeholder="0" />
+      </div>
+    </div>
+
+    <!-- ══ 3. PRE-TAX BENEFITS ══════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">Pre-Tax Benefits — What You're Sheltering</div>
+      <p class="hint" style="margin-bottom:16px;">Reduces AGI dollar-for-dollar. Most critical levers you control each paycheck.</p>
+
+      <div class="row">
+        <div class="field">
+          <label>401(k) Contributions YTD</label>
+          <div class="hint"><span class="badge orange">Pay stub</span> "401k" in deductions YTD. <span id="limit-401k" style="color:#1a7f4b;font-weight:600;"></span></div>
+          <input type="number" id="contrib_401k" placeholder="0" min="0" oninput="updateLimits()" />
+        </div>
+        <div class="field">
+          <label>HSA Contributions YTD</label>
+          <div class="hint"><span class="badge orange">Pay stub</span> "HSA" in deductions. <span id="limit-hsa" style="color:#1a7f4b;font-weight:600;"></span></div>
+          <input type="number" id="contrib_hsa" placeholder="0" min="0" oninput="updateLimits()" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Dependent Care FSA</label>
+          <div class="hint">Pre-tax childcare. Max $5,000/yr MFJ.</div>
+          <input type="number" id="contrib_fsa" placeholder="0" min="0" />
+        </div>
+        <div class="field">
+          <label>Other Pre-Tax Deductions</label>
+          <div class="hint">Commuter benefits, medical/dental premiums, etc.</div>
+          <input type="number" id="contrib_other" placeholder="0" min="0" />
+        </div>
+      </div>
+
+      <div id="limits-remaining" style="display:none; background:#e4f5ec; border-radius:10px; padding:14px 16px; margin-top:4px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1a7f4b;margin-bottom:8px;">Room remaining this year</div>
+        <div id="limits-text" style="font-size:14px;line-height:1.8;"></div>
+      </div>
+    </div>
+
+    <!-- ══ 4. RENTAL PROPERTIES ════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">Rental Properties (2 Properties)</div>
+
+      <div class="info-box">
+        <strong>Important — read before filling this section:</strong><br/>
+        The standard "active participation" benefit ($25,000 loss allowance) <strong>phases out completely above $150k AGI</strong>. At your income level it is worth $0.<br/><br/>
+        The real opportunity is <strong>Real Estate Professional (REP) status</strong> — which removes the passive loss cap entirely. Questions below will determine if you qualify, or what it would take to qualify.
+      </div>
+
+      <!-- Property 1 -->
+      <div class="property-box">
+        <div class="property-header">🏠 Property 1</div>
+
+        <div class="field">
+          <label>Property Address / Nickname</label>
+          <input type="text" id="p1_name" placeholder="e.g. Tully Road condo" />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Rental Type</label>
+            <div class="hint">Average tenant stay determines tax treatment.</div>
+            <select id="p1_type" onchange="updateRentalHints()">
+              <option value="ltr">Long-term (12-month lease)</option>
+              <option value="mtr">Medium-term (1–6 months)</option>
+              <option value="str">Short-term / Airbnb (avg ≤7 days)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Do you use a property manager?</label>
+            <select id="p1_mgr">
+              <option value="no">No — I manage it myself</option>
+              <option value="yes_review">Yes, but I review and approve all decisions</option>
+              <option value="yes_rubber">Yes, I mostly just sign off</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Gross Annual Rent Collected ($)</label>
+            <div class="hint">Total rent received this year (or projected).</div>
+            <input type="number" id="p1_income" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Mortgage Interest Paid ($)</label>
+            <div class="hint"><span class="badge blue">1098 Box 1</span> Interest only, not principal.</div>
+            <input type="number" id="p1_mortgage" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <div class="row3">
+          <div class="field">
+            <label>Property Tax ($)</label>
+            <input type="number" id="p1_prop_tax" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Insurance ($)</label>
+            <input type="number" id="p1_insurance" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Repairs &amp; Maintenance ($)</label>
+            <input type="number" id="p1_repairs" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>HOA / Management Fees ($)</label>
+            <input type="number" id="p1_fees" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Other Expenses ($)</label>
+            <div class="hint">Advertising, legal, supplies, etc.</div>
+            <input type="number" id="p1_other" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <hr class="divider" />
+        <div class="row">
+          <div class="field">
+            <label>Purchase Price ($)</label>
+            <div class="hint">Used to estimate annual depreciation (building only, not land).</div>
+            <input type="number" id="p1_purchase_price" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Land Value ($)</label>
+            <div class="hint">Estimate ~20–25% of purchase price for CA. Land is NOT depreciable.</div>
+            <input type="number" id="p1_land_value" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Year Purchased</label>
+            <input type="number" id="p1_year_purchased" placeholder="e.g. 2018" min="1990" max="2027" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Depreciation Taken to Date ($)</label>
+            <div class="hint">From prior tax returns (Schedule E). Leave 0 to auto-estimate.</div>
+            <input type="number" id="p1_depr_taken" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <div id="p1_calc" style="display:none; margin-top:12px; background:#f5f5f7; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.8;"></div>
+      </div>
+
+      <!-- Property 2 -->
+      <div class="property-box">
+        <div class="property-header">🏠 Property 2</div>
+
+        <div class="field">
+          <label>Property Address / Nickname</label>
+          <input type="text" id="p2_name" placeholder="e.g. Oakland duplex" />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Rental Type</label>
+            <select id="p2_type" onchange="updateRentalHints()">
+              <option value="ltr">Long-term (12-month lease)</option>
+              <option value="mtr">Medium-term (1–6 months)</option>
+              <option value="str">Short-term / Airbnb (avg ≤7 days)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Do you use a property manager?</label>
+            <select id="p2_mgr">
+              <option value="no">No — I manage it myself</option>
+              <option value="yes_review">Yes, but I review and approve all decisions</option>
+              <option value="yes_rubber">Yes, I mostly just sign off</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Gross Annual Rent Collected ($)</label>
+            <input type="number" id="p2_income" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Mortgage Interest Paid ($)</label>
+            <div class="hint"><span class="badge blue">1098 Box 1</span></div>
+            <input type="number" id="p2_mortgage" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <div class="row3">
+          <div class="field">
+            <label>Property Tax ($)</label>
+            <input type="number" id="p2_prop_tax" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Insurance ($)</label>
+            <input type="number" id="p2_insurance" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Repairs &amp; Maintenance ($)</label>
+            <input type="number" id="p2_repairs" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>HOA / Management Fees ($)</label>
+            <input type="number" id="p2_fees" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Other Expenses ($)</label>
+            <input type="number" id="p2_other" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <hr class="divider" />
+        <div class="row">
+          <div class="field">
+            <label>Purchase Price ($)</label>
+            <input type="number" id="p2_purchase_price" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Land Value ($)</label>
+            <input type="number" id="p2_land_value" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Year Purchased</label>
+            <input type="number" id="p2_year_purchased" placeholder="e.g. 2020" min="1990" max="2027" oninput="calcRental()" />
+          </div>
+          <div class="field">
+            <label>Depreciation Taken to Date ($)</label>
+            <input type="number" id="p2_depr_taken" placeholder="0" min="0" oninput="calcRental()" />
+          </div>
+        </div>
+
+        <div id="p2_calc" style="display:none; margin-top:12px; background:#f5f5f7; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.8;"></div>
+      </div>
+    </div>
+
+    <!-- ══ 5. ACTIVE PARTICIPATION DOCUMENTATION ═══════════════════ -->
+    <div class="section">
+      <div class="section-title">Active Participation — Documentation</div>
+      <p class="hint" style="margin-bottom:16px;">
+        TurboTax asks vague yes/no questions. Answer these specifically — they determine your legal status and what you can deduct. Check every box that genuinely applies to you.
+      </p>
+
+      <div style="font-size:13px; font-weight:600; color:#3d3d3f; margin-bottom:10px;">Management decisions you personally made this year:</div>
+
+      <div class="checkbox-field">
+        <input type="checkbox" id="ap_tenant_approval" />
+        <label for="ap_tenant_approval">
+          I personally approved (or rejected) all tenants — reviewed applications, ran credit checks, called references.<br/>
+          <span class="sublabel">Not just rubber-stamping a property manager's recommendation.</span>
+        </label>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ap_rental_terms" />
+        <label for="ap_rental_terms">
+          I set or approved rental rates for each property this year (monthly rent, deposit amount, lease length).<br/>
+          <span class="sublabel">Even if using market comparables, you made the final call.</span>
+        </label>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ap_repairs_approval" />
+        <label for="ap_repairs_approval">
+          I approved all repairs and maintenance above $100 before work was done.<br/>
+          <span class="sublabel">Called contractors, reviewed estimates, authorized the work.</span>
+        </label>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ap_capital_decisions" />
+        <label for="ap_capital_decisions">
+          I made or approved any capital improvement decisions (new appliances, HVAC, roof, flooring, etc.).<br/>
+          <span class="sublabel">Choosing the contractor and scope counts.</span>
+        </label>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ap_eviction" />
+        <label for="ap_eviction">
+          I handled any lease renewals, non-renewals, or tenant issues (late rent, lease violations) personally.
+        </label>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ap_bookkeeping" />
+        <label for="ap_bookkeeping">
+          I review financial records for the properties (rents received, expenses paid, bank statements) at least monthly.
+        </label>
+      </div>
+
+      <hr class="divider" />
+      <div style="font-size:13px; font-weight:600; color:#3d3d3f; margin-bottom:12px;">Time tracking:</div>
+
+      <div class="row">
+        <div class="field">
+          <label>Your hours per year on rental activities</label>
+          <div class="hint">Include: tenant calls, finding contractors, reviewing statements, inspections, driving to properties, doing taxes. Estimate is fine.</div>
+          <input type="number" id="hours_umair" placeholder="0" min="0" oninput="calcRepStatus()" />
+        </div>
+        <div class="field">
+          <label>Huma's hours per year on rental activities</label>
+          <div class="hint">Include everything Huma does: tenant communication, showing units, coordinating repairs, paperwork, etc.</div>
+          <input type="number" id="hours_huma" placeholder="0" min="0" oninput="calcRepStatus()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 6. REAL ESTATE PROFESSIONAL STATUS (HUMA) ═══════════════ -->
+    <div class="section">
+      <div class="section-title">Real Estate Professional Status — Huma</div>
+
+      <div class="info-box">
+        <strong>Why this matters:</strong> REP status removes the passive loss cap entirely — all rental losses offset your W-2 income. To qualify (on a joint return): one spouse must spend <strong>750+ hours/year</strong> on real estate AND real estate must be <strong>more than 50% of that spouse's total working hours</strong>.
+      </div>
+
+      <div class="field">
+        <label>Is Huma currently employed or running a business?</label>
+        <select id="huma_employed" onchange="calcRepStatus()">
+          <option value="no">No — not working / stay-at-home</option>
+          <option value="part">Part-time (less than 20 hrs/week)</option>
+          <option value="full">Full-time employee (40+ hrs/week)</option>
+          <option value="self">Self-employed / freelance</option>
+          <option value="re">Works in real estate (agent, investor, property mgmt)</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Huma's total working hours per year (all jobs)</label>
+          <div class="hint">If not employed: 0. If part-time: ~500–800. If full-time: ~2000.</div>
+          <input type="number" id="huma_total_hours" placeholder="0" min="0" oninput="calcRepStatus()" />
+        </div>
+        <div class="field">
+          <label>Is Huma a licensed real estate agent or broker?</label>
+          <select id="huma_licensed">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+            <option value="considering">Not yet, considering it</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="rep-status-display" style="margin-top: 8px;"></div>
+    </div>
+
+    <!-- ══ 7. PRIMARY HOME DEDUCTIONS ══════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">Primary Home &amp; Itemized Deductions</div>
+      <div class="row">
+        <div class="field">
+          <label>Primary Home Mortgage Interest</label>
+          <div class="hint"><span class="badge blue">1098 Box 1</span> Do not include rental property mortgages here.</div>
+          <input type="number" id="mortgage_interest" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>Primary Home Property Tax</label>
+          <div class="hint">Your primary residence only. Combined with state tax, capped at $10k SALT.</div>
+          <input type="number" id="property_tax" placeholder="0" />
+        </div>
+      </div>
+      <div class="field">
+        <label>State Income Tax Withheld</label>
+        <div class="hint"><span class="badge blue">W2 Box 17</span> California state tax withheld. Part of SALT, capped at $10k combined with property tax.</div>
+        <input type="number" id="state_tax" placeholder="0" />
+      </div>
+    </div>
+
+    <!-- ══ 8. GIVING & ASSETS ══════════════════════════════════════ -->
+    <div class="section">
+      <div class="section-title">Charitable Giving &amp; Appreciated Assets</div>
+      <div class="row">
+        <div class="field">
+          <label>Annual Charitable Giving</label>
+          <div class="hint">Total donations — mosque, charities, zakat, etc. Baseline for DAF planning.</div>
+          <input type="number" id="charitable_annual" placeholder="0" />
+        </div>
+        <div class="field">
+          <label>Current DAF Balance</label>
+          <div class="hint">Fidelity Charitable / Schwab Charitable current balance. 0 if none.</div>
+          <input type="number" id="daf_balance" placeholder="0" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Unrealized Long-Term Gains in Brokerage</label>
+        <div class="hint">Log into Schwab/Fidelity → portfolio → "Unrealized gains" on positions held &gt;1 year. Rough estimate fine. Does not include GOOGL RSU holding period unless you held after vest.</div>
+        <input type="number" id="unrealized_lt_gains" placeholder="0" />
+      </div>
+    </div>
+
+    <button type="submit" id="submit-btn">Analyze My Tax Picture →</button>
+    <p class="status-msg" id="status"></p>
+
+  </form>
+
+  <!-- ══ RESULTS ══════════════════════════════════════════════════ -->
+  <div id="result">
+
+    <!-- Bracket -->
+    <div class="result-card">
+      <div class="result-title">Tax Bracket — <span id="r-year"></span></div>
+      <div class="bracket-display">
+        <div class="bracket-pill" id="r-bracket-pill"></div>
+        <div class="bracket-meta" id="r-bracket-meta"></div>
+      </div>
+      <div id="r-income-summary"></div>
+    </div>
+
+    <!-- Rental Impact -->
+    <div class="result-card" id="r-rental-card">
+      <div class="result-title">Rental Property Tax Impact</div>
+      <div id="r-rental-content"></div>
+    </div>
+
+    <!-- Strategies -->
+    <div class="result-card">
+      <div class="result-title">Tax Reduction Strategies — Ranked by Impact</div>
+      <ul class="strategy-list" id="r-strategies"></ul>
+    </div>
+
+    <!-- DAF -->
+    <div class="result-card">
+      <div class="result-title">Philanthropic Strategy (DAF)</div>
+      <div id="r-daf-content"></div>
+    </div>
+
+    <p class="status-msg" id="save-status"></p>
+  </div>
+
+</div>
+<script>
+// ══ CONSTANTS ══════════════════════════════════════════════════════
+const STD_DED = {
+  2027:{MFJ:31600,Single:15800,MFS:15800,HOH:22650},
+  2026:{MFJ:30800,Single:15400,MFS:15400,HOH:22050},
+  2025:{MFJ:30000,Single:15000,MFS:15000,HOH:22500},
+  2024:{MFJ:29200,Single:14600,MFS:14600,HOH:21900},
+  2023:{MFJ:27700,Single:13850,MFS:13850,HOH:20800},
+};
+const LIMIT_401K = {2027:24500,2026:24000,2025:23500,2024:23000,2023:22500};
+const LIMIT_HSA  = {2027:9150, 2026:8850, 2025:8550, 2024:8300, 2023:7750};
+
+const BRACKETS = {
+  2026:{MFJ:[[23850,.10],[96950,.12],[206700,.22],[394600,.24],[501050,.32],[751600,.35],[Infinity,.37]]},
+  2025:{MFJ:[[23200,.10],[94300,.12],[201050,.22],[383900,.24],[487450,.32],[731200,.35],[Infinity,.37]]},
+  2024:{MFJ:[[23200,.10],[94300,.12],[201050,.22],[383900,.24],[487450,.32],[731200,.35],[Infinity,.37]]},
+  2023:{MFJ:[[22000,.10],[89075,.12],[190750,.22],[364200,.24],[462500,.32],[693750,.35],[Infinity,.37]]},
+};
+BRACKETS[2027] = BRACKETS[2026];
+
+// Add Single/MFS/HOH for all years (simplified for space)
+['2023','2024','2025','2026','2027'].forEach(y=>{
+  BRACKETS[y].Single = BRACKETS[y].MFJ.map(([t,r])=>[Math.round(t/2),r]);
+  BRACKETS[y].MFS    = BRACKETS[y].Single;
+  BRACKETS[y].HOH    = BRACKETS[y].MFJ.map(([t,r])=>[Math.round(t*.7),r]);
+});
+
+// ══ HELPERS ════════════════════════════════════════════════════════
+const $n  = id => parseFloat(document.getElementById(id)?.value)||0;
+const $v  = id => document.getElementById(id)?.value||'';
+const $c  = id => document.getElementById(id)?.checked||false;
+const $e  = id => document.getElementById(id);
+const $fmt= n  => n==null?'—':'$'+Math.round(n).toLocaleString();
+const pct = r  => (r*100).toFixed(0)+'%';
+
+function getMarginalRate(ti, year, status) {
+  const b = (BRACKETS[year]||BRACKETS[2026])[status]||BRACKETS[2026].MFJ;
+  for(const[top,r]of b) if(ti<=top) return r;
+  return .37;
+}
+function calcFederalTax(ti, year, status) {
+  const b = (BRACKETS[year]||BRACKETS[2026])[status]||BRACKETS[2026].MFJ;
+  let tax=0,prev=0;
+  for(const[top,r]of b){
+    if(ti<=top){tax+=(ti-prev)*r;break;}
+    tax+=(top-prev)*r; prev=top;
+  }
+  return tax;
+}
+function ltcgRate(ti, year) {
+  const t={2025:[96700,583750],2026:[99350,600050],2027:[102150,618000],2024:[94050,583750],2023:[89250,553850]};
+  const[a,b]=(t[year]||t[2025]);
+  return ti<=a?0:ti<=b?.15:.20;
+}
+function annualDepr(purchasePrice, landValue, yearPurchased, currentYear) {
+  const building = Math.max(0, purchasePrice - landValue);
+  const annual   = building / 27.5;
+  const yearsHeld = Math.max(1, currentYear - yearPurchased);
+  return { annual, totalAvailable: annual * Math.min(yearsHeld, 27.5) };
+}
+
+// ══ LIVE CALCULATIONS ══════════════════════════════════════════════
+function estimateIncome() {
+  const base   = $n('base_salary');
+  const ytd    = $n('ytd_wages');
+  const perPay = $n('gross_per_paycheck');
+  const rem    = $n('pay_periods_remaining');
+  const rsuY   = $n('rsu_ytd');
+  const rsuR   = $n('rsu_remaining');
+  const bonus  = $n('bonus');
+  if(ytd>0 && perPay>0 && rem>=0) {
+    $e('projected_wages').value = Math.round(ytd + perPay*rem + rsuY + rsuR + bonus);
+  } else if(base>0) {
+    $e('projected_wages').value = Math.round(base + rsuY + rsuR + bonus);
+  }
+}
+
+function updateLimits() {
+  const year = parseInt($v('tax_year'))||2026;
+  const max401 = LIMIT_401K[year]||23500;
+  const maxHsa = LIMIT_HSA[year]||8550;
+  const c401   = $n('contrib_401k');
+  const cHsa   = $n('contrib_hsa');
+  const r401   = Math.max(0, max401-c401);
+  const rHsa   = Math.max(0, maxHsa-cHsa);
+  if(c401>0||cHsa>0){
+    $e('limits-remaining').style.display='';
+    $e('limits-text').innerHTML =
+      (r401>0?`<b>401(k):</b> ${$fmt(r401)} remaining (limit ${$fmt(max401)})`:`<b>401(k):</b> ✅ Maxed`)+'<br/>'+
+      (rHsa>0?`<b>HSA:</b> ${$fmt(rHsa)} remaining (limit ${$fmt(maxHsa)} family)`:`<b>HSA:</b> ✅ Maxed`);
+  } else {
+    $e('limits-remaining').style.display='none';
+  }
+}
+
+function calcRental() {
+  const year = parseInt($v('tax_year'))||2026;
+  [1,2].forEach(i=>{
+    const income  = $n(`p${i}_income`);
+    const mort    = $n(`p${i}_mortgage`);
+    const ptax    = $n(`p${i}_prop_tax`);
+    const ins     = $n(`p${i}_insurance`);
+    const rep     = $n(`p${i}_repairs`);
+    const fees    = $n(`p${i}_fees`);
+    const other   = $n(`p${i}_other`);
+    const pp      = $n(`p${i}_purchase_price`);
+    const land    = $n(`p${i}_land_value`);
+    const yrBuy   = $n(`p${i}_year_purchased`);
+
+    if(!income && !mort && !pp) { $e(`p${i}_calc`).style.display='none'; return; }
+
+    const {annual:deprAnnual} = pp>0&&yrBuy>0
+      ? annualDepr(pp, land||pp*.2, yrBuy, year)
+      : {annual:0};
+
+    const cashExpenses = mort+ptax+ins+rep+fees+other;
+    const netCash = income - cashExpenses;
+    const netWithDepr = netCash - deprAnnual;
+
+    const box = $e(`p${i}_calc`);
+    box.style.display='';
+    box.innerHTML = `
+      <b>Property ${i} quick view:</b><br/>
+      Gross rent: ${$fmt(income)}&nbsp;&nbsp;
+      Cash expenses: ${$fmt(cashExpenses)}&nbsp;&nbsp;
+      Cash flow: <b style="color:${netCash>=0?'#1a7f4b':'#c0392b'}">${$fmt(netCash)}</b><br/>
+      Depreciation (est.): ${$fmt(deprAnnual)}/yr (${pp>0?Math.round((pp-(land||pp*.2))/1000)+'k building ÷ 27.5 yrs':'enter purchase price to calculate'})<br/>
+      <b>Net rental income/loss with depreciation: <span style="color:${netWithDepr>=0?'#1a7f4b':'#c0392b'}">${$fmt(netWithDepr)}</span></b>
+    `;
+  });
+}
+
+function calcRepStatus() {
+  const hrsU = $n('hours_umair');
+  const hrsH = $n('hours_huma');
+  const huma_total = $n('huma_total_hours');
+  const employed   = $v('huma_employed');
+
+  const REP_HOURS = 750;
+  const box = $e('rep-status-display');
+
+  if(!hrsU && !hrsH) { box.innerHTML=''; return; }
+
+  let html = '';
+
+  // Umair can't be REP (full-time at Google ~2000 hrs = real estate would need to be >2000 hrs too)
+  const umairCanBeRep = hrsU >= REP_HOURS && hrsU > 2000; // basically impossible
+
+  // Huma's REP test
+  const humaRealEstateHours = hrsH;
+  const humaTotalHours = huma_total || (employed==='no'?0:employed==='part'?800:employed==='full'?2000:huma_total||1000);
+  const humaMeetsHours = humaRealEstateHours >= REP_HOURS;
+  const humaMeets50pct = humaTotalHours===0 ? true : (humaRealEstateHours / humaTotalHours) > 0.5;
+
+  const repQualifies  = humaMeetsHours && humaMeets50pct;
+  const hours750gap   = Math.max(0, REP_HOURS - humaRealEstateHours);
+  const pctRE = humaTotalHours>0 ? Math.round(humaRealEstateHours/humaTotalHours*100) : 0;
+
+  if(repQualifies) {
+    html = `<div class="good-box">
+      ✅ <strong>Huma qualifies for Real Estate Professional status!</strong><br/>
+      ${hrsH} hours on real estate (need: 750+) ✓ &nbsp; ${pctRE}% of her working hours in RE (need: 50%+) ✓<br/>
+      <strong>This means all rental losses offset your W-2 income — no passive loss cap.</strong><br/>
+      Action: Document her hours meticulously — a contemporaneous log beats a year-end estimate in an audit.
+    </div>`;
+  } else if(humaMeetsHours && !humaMeets50pct) {
+    html = `<div class="warn-box">
+      ⚠️ Huma hits 750 hours but real estate is only ${pctRE}% of her work (needs &gt;50%).<br/>
+      Options: (1) Reduce non-RE work hours, or (2) Increase real estate hours to exceed all other work combined.
+    </div>`;
+  } else if(!humaMeetsHours) {
+    html = `<div class="warn-box">
+      ⚠️ Huma needs <strong>${hours750gap} more hours</strong> on real estate to hit the 750-hour threshold${humaTotalHours>0?` — and real estate must be &gt;50% of her total work time (currently ${pctRE}%)`:''}.<br/>
+      <br/>
+      <b>What counts toward the 750 hours:</b> showing and renting units, tenant communication, coordinating & supervising repairs, bookkeeping, finding tenants (Zillow listings, showings), driving to properties, researching repairs, reviewing contractor bids, attending HOA meetings, property tax appeals.<br/>
+      <br/>
+      750 hours across 2 properties = ~7 hours/week. Achievable if Huma actively manages both.
+    </div>`;
+    if(employed==='full'){
+      html += `<div class="info-box">Since Huma works full-time (~2000 hrs/yr), real estate would need to be more than 50% of her total work — that means 2000+ RE hours. Full-time employment makes REP status very difficult unless she leaves or goes part-time.</div>`;
+    }
+  }
+
+  // Active participation note
+  const activeParticipation = $c('ap_tenant_approval') && $c('ap_rental_terms') && ($c('ap_repairs_approval')||$c('ap_capital_decisions'));
+  html += `<div style="margin-top:12px; font-size:13px; color:#6e6e73;">
+    <b>Active participation documented:</b> ${activeParticipation ? '✅ Yes (tenant approval + rent-setting + repairs)' : '⚠️ Check more boxes above to document your active role'}<br/>
+    Note: active participation (the $25k allowance) is fully phased out above $150k AGI and provides $0 benefit at your income level — but documenting it protects you in audit.
+  </div>`;
+
+  box.innerHTML = html;
+}
+
+function updateRentalHints() {}
+
+// ══ MAIN CALCULATE ═════════════════════════════════════════════════
+function calculate() {
+  const year   = parseInt($v('tax_year'))||2026;
+  const status = $v('filing_status')||'MFJ';
+  const mode   = document.querySelector('input[name="mode"]:checked').value;
+
+  // Income
+  let grossIncome = mode==='plan'
+    ? ($n('projected_wages') || $n('base_salary') + $n('rsu_ytd') + $n('rsu_remaining') + $n('bonus'))
+    : ($n('wages_actual') + $n('cap_gains_lt') + $n('cap_gains_st') + $n('dividends_ordinary'));
+
+  // Pre-tax
+  const c401  = $n('contrib_401k');
+  const cHsa  = $n('contrib_hsa');
+  const cFsa  = $n('contrib_fsa');
+  const cOth  = $n('contrib_other');
+  const pretax = c401+cHsa+cFsa+cOth;
+  const max401 = LIMIT_401K[year]||23500;
+  const maxHsa = LIMIT_HSA[year]||8550;
+  const rem401 = Math.max(0, max401-c401);
+  const remHsa = Math.max(0, maxHsa-cHsa);
+  const remFsa = Math.max(0, 5000-cFsa);
+
+  const agi = Math.max(0, grossIncome - pretax);
+
+  // Rental income/loss
+  let totalRentalIncome=0, totalRentalExpenses=0, totalDepreciation=0;
+  let rentalProps = [];
+
+  [1,2].forEach(i=>{
+    const inc    = $n(`p${i}_income`);
+    const mort   = $n(`p${i}_mortgage`);
+    const ptax   = $n(`p${i}_prop_tax`);
+    const ins    = $n(`p${i}_insurance`);
+    const rep    = $n(`p${i}_repairs`);
+    const fees   = $n(`p${i}_fees`);
+    const other  = $n(`p${i}_other`);
+    const pp     = $n(`p${i}_purchase_price`);
+    const land   = $n(`p${i}_land_value`);
+    const yrBuy  = $n(`p${i}_year_purchased`);
+    const pType  = $v(`p${i}_type`);
+
+    if(!inc && !mort && !pp) return;
+
+    const {annual:depr} = pp>0&&yrBuy>0 ? annualDepr(pp, land||pp*.2, yrBuy, year) : {annual:0};
+    const cashExp = mort+ptax+ins+rep+fees+other;
+    const netBeforeDepr = inc - cashExp;
+    const netAfterDepr  = netBeforeDepr - depr;
+
+    totalRentalIncome   += inc;
+    totalRentalExpenses += cashExp;
+    totalDepreciation   += depr;
+    rentalProps.push({i, inc, cashExp, depr, net: netAfterDepr, type: pType, name: $v(`p${i}_name`)||`Property ${i}`});
+  });
+
+  const totalRentalNet = totalRentalIncome - totalRentalExpenses - totalDepreciation;
+
+  // REP status
+  const hrsH         = $n('hours_huma');
+  const humaTot      = $n('huma_total_hours');
+  const employed     = $v('huma_employed');
+  const humaDefault  = employed==='no'?0:employed==='full'?2000:employed==='part'?800:humaTot||1000;
+  const humaHrsTotal = humaTot||humaDefault;
+  const repQualifies = hrsH>=750 && (humaHrsTotal===0||(hrsH/humaHrsTotal)>0.5);
+
+  // How much rental loss can offset regular income
+  let deductibleRentalLoss = 0;
+  let suspendedLoss = 0;
+  let rentalLossNote = '';
+
+  if(totalRentalNet >= 0) {
+    // Rental income — adds to taxable income
+    deductibleRentalLoss = -totalRentalNet; // negative = adds to income
+    rentalLossNote = `Your rentals show net income of ${$fmt(totalRentalNet)}, which adds to your taxable income.`;
+  } else {
+    const loss = Math.abs(totalRentalNet);
+    if(repQualifies) {
+      deductibleRentalLoss = totalRentalNet; // full loss offsets income
+      rentalLossNote = `REP status: full ${$fmt(loss)} rental loss offsets your W-2 income.`;
+    } else {
+      // Check for STR with material participation
+      const strProps = rentalProps.filter(p=>p.type==='str');
+      const strLoss  = strProps.reduce((s,p)=>s+Math.min(0,p.net),0);
+      const ltrLoss  = totalRentalNet - strLoss;
+
+      // STR can be active if material participation (500+ hrs)
+      const totalHours = $n('hours_umair') + hrsH;
+      const strActive = strProps.length>0 && totalHours>=500;
+
+      if(strActive && strLoss<0) {
+        deductibleRentalLoss = strLoss; // STR loss deductible
+        suspendedLoss = ltrLoss;
+        rentalLossNote = `STR losses (${$fmt(Math.abs(strLoss))}) are deductible via material participation. LTR losses (${$fmt(Math.abs(ltrLoss))}) are suspended until rental is sold or you gain REP status.`;
+      } else {
+        // Above $150k AGI — active participation $25k allowance = $0
+        deductibleRentalLoss = 0;
+        suspendedLoss = totalRentalNet;
+        rentalLossNote = `Your ${$fmt(loss)} rental loss is suspended as passive. At AGI above $150k, the $25k active participation allowance is fully phased out. Losses carry forward and offset gain when you sell.`;
+      }
+    }
+  }
+
+  // Taxable income (before rental net income add-back for now)
+  const saltCapped    = Math.min($n('state_tax')+$n('property_tax'), 10000);
+  const mortgage      = $n('mortgage_interest');
+  const charity       = $n('charitable_annual');
+  const currItemized  = saltCapped + mortgage + charity;
+  const stdDed        = (STD_DED[year]||STD_DED[2026])[status];
+  const deduction     = Math.max(stdDed, currItemized);
+  const usingStd      = deduction===stdDed;
+
+  // AGI adjusted for deductible rental loss (only if negative rental = loss)
+  const agiAdjusted = agi + Math.max(0, totalRentalNet) + Math.min(0, deductibleRentalLoss);
+  const taxableIncome = Math.max(0, agiAdjusted - deduction);
+  const marginalRate  = getMarginalRate(taxableIncome, year, status);
+  const federalTax    = calcFederalTax(taxableIncome, year, status);
+  const effRate       = grossIncome>0 ? federalTax/grossIncome : 0;
+
+  // ── STRATEGIES ──────────────────────────────────────────────────
+  const strategies = [];
+
+  if(rem401>0) strategies.push({
+    name:`Max out 401(k)`, impact:'very_high',
+    desc:`${$fmt(rem401)} of room remaining (limit ${$fmt(max401)}). Reduces AGI dollar-for-dollar.`,
+    saving: rem401 * marginalRate,
+    cta:`Increase your 401k contribution rate in Workday/HR portal immediately — takes effect next payroll`,
+  });
+
+  if(remHsa>0) strategies.push({
+    name:`Max out HSA`, impact:'high',
+    desc:`${$fmt(remHsa)} remaining (limit ${$fmt(maxHsa)} family). Triple tax advantage: pre-tax, tax-free growth, tax-free medical withdrawals. Best savings account in existence.`,
+    saving: remHsa * marginalRate,
+    cta:`Increase HSA deduction in payroll or contribute lump sum directly at Fidelity HSA`,
+  });
+
+  if(remFsa>0) strategies.push({
+    name:`Dependent Care FSA (children)`, impact:'medium',
+    desc:`${$fmt(remFsa)} remaining (max $5,000). If Omer's after-school care, Nyel/Emaad's tutoring/activities qualify — this shelters income pre-tax.`,
+    saving: remFsa * marginalRate,
+    cta:`Enroll during open enrollment or qualifying life event`,
+  });
+
+  // REP strategy
+  if(!repQualifies) {
+    const lossCarried = Math.abs(Math.min(0, totalRentalNet));
+    if(lossCarried > 0) strategies.push({
+      name:`Unlock rental losses via REP status`, impact:'very_high',
+      desc:`You have ${$fmt(lossCarried)} in annual rental losses (including depreciation) that are currently suspended as passive. If Huma qualifies as Real Estate Professional, these losses offset your W-2 income every year.`,
+      saving: lossCarried * marginalRate,
+      cta:`See REP section above — Huma needs 750+ hours/year on real estate and it must be >50% of her total work time`,
+    });
+  }
+
+  // STR conversion
+  const hasLtr = rentalProps.some(p=>p.type==='ltr');
+  if(hasLtr && !repQualifies) {
+    const ltrLosses = rentalProps.filter(p=>p.type==='ltr').reduce((s,p)=>s+Math.min(0,p.net),0);
+    if(ltrLosses < 0) strategies.push({
+      name:`Convert LTR to short-term rental (Airbnb)`, impact:'high',
+      desc:`Short-term rentals (avg stay ≤7 days) are NOT classified as passive rental activity — losses are deductible if you materially participate (500+ hours combined). Could unlock ${$fmt(Math.abs(ltrLosses))}/yr.`,
+      saving: Math.abs(ltrLosses) * marginalRate,
+      cta:`Evaluate if local zoning and HOA rules allow STR. Requires active management (>500 hrs to qualify).`,
+    });
+  }
+
+  // DAF bunching
+  const gapToItemize = Math.max(0, stdDed - currItemized);
+  const annualGiving = charity || 5000;
+  const bunchAmt     = Math.ceil(annualGiving * 2 / 500) * 500;
+  const bunchItemized= saltCapped + mortgage + bunchAmt;
+  const dafWorthIt   = bunchItemized > stdDed && usingStd;
+  const unrealGains  = $n('unrealized_lt_gains');
+  const cgRate       = ltcgRate(taxableIncome, year);
+
+  if(dafWorthIt) {
+    const dafSaving = (bunchItemized - stdDed) * marginalRate;
+    strategies.push({
+      name:`DAF bunching — ${$fmt(bunchAmt)} contribution`, impact:'medium',
+      desc:`2 years of giving upfront clears the standard deduction threshold (${$fmt(stdDed)}). Itemize this year, take standard deduction next year. Est. tax savings: ${$fmt(dafSaving)}.`,
+      saving: dafSaving,
+      cta: unrealGains>0 ? `Donate appreciated stock (not cash) — avoids ${pct(cgRate)} cap gains tax AND gets the income deduction` : `Open Fidelity Charitable DAF and contribute`,
+    });
+  }
+
+  if(unrealGains>0 && (dafWorthIt || !usingStd)) {
+    const donateAmt = Math.min(unrealGains, bunchAmt||annualGiving);
+    const cgSaving  = donateAmt * cgRate;
+    strategies.push({
+      name:`Donate appreciated GOOGL shares to DAF`, impact:'high',
+      desc:`Transfer shares directly (don't sell first). You avoid ${pct(cgRate)} cap gains tax on ${$fmt(donateAmt)} of gains AND get the full market value as an income deduction.`,
+      saving: cgSaving,
+      cta:`Transfer from Schwab → Fidelity Charitable. Takes ~3 business days. Do before selling anything.`,
+    });
+  }
+
+  strategies.sort((a,b)=>b.saving-a.saving);
+
+  return {
+    year, status, mode, grossIncome, pretax, agi: agiAdjusted,
+    deduction, usingStd, stdDed, taxableIncome, marginalRate,
+    federalTax, effRate, strategies,
+    rental: { props: rentalProps, totalIncome: totalRentalIncome, totalExpenses: totalRentalExpenses,
+              totalDepr: totalDepreciation, totalNet: totalRentalNet,
+              deductible: deductibleRentalLoss, suspended: suspendedLoss, note: rentalLossNote, repQualifies },
+    daf: { worth: dafWorthIt || !usingStd, amount: dafWorthIt?bunchAmt:annualGiving, stdDed, bunchItemized,
+           usingStd, saving: dafWorthIt?(bunchItemized-stdDed)*marginalRate:annualGiving*marginalRate,
+           marginalRate, unrealGains, cgRate, dafBalance: $n('daf_balance') },
+    rem401, remHsa,
+  };
+}
+
+// ══ RENDER ═════════════════════════════════════════════════════════
+function render(r) {
+  $e('r-year').textContent = r.year;
+
+  // Bracket pill
+  const pill = $e('r-bracket-pill');
+  const rt   = r.marginalRate;
+  pill.textContent = pct(rt);
+  pill.className   = 'bracket-pill'+(rt>=.37?'':(rt>=.35?' b35':(rt>=.32?' b32':(rt>=.24?' b24':(rt>=.22?' b22':' b12')))));
+
+  $e('r-bracket-meta').innerHTML =
+    `<strong>${pct(rt)} marginal bracket</strong><br/>
+    Every extra dollar earned is taxed at ${pct(rt)}.<br/>
+    Every dollar you shelter (401k, HSA, deductions) saves you ${pct(rt)} in federal taxes.`;
+
+  $e('r-income-summary').innerHTML = `
+    <div class="summary-row"><span class="summary-label">Gross income (wages + RSUs)</span><span class="summary-value">${$fmt(r.grossIncome)}</span></div>
+    <div class="summary-row"><span class="summary-label">Pre-tax deductions (401k + HSA + FSA)</span><span class="summary-value good">−${$fmt(r.pretax)}</span></div>
+    <div class="summary-row"><span class="summary-label">AGI</span><span class="summary-value">${$fmt(r.agi)}</span></div>
+    <div class="summary-row"><span class="summary-label">${r.usingStd?'Standard':'Itemized'} deduction</span><span class="summary-value good">−${$fmt(r.deduction)}</span></div>
+    <div class="summary-row"><span class="summary-label">Taxable income</span><span class="summary-value">${$fmt(r.taxableIncome)}</span></div>
+    <div class="summary-row"><span class="summary-label">Estimated federal tax</span><span class="summary-value bad">${$fmt(r.federalTax)}</span></div>
+    <div class="summary-row"><span class="summary-label">Effective tax rate</span><span class="summary-value">${pct(r.effRate)}</span></div>`;
+
+  // Rental card
+  const rc = r.rental;
+  let rentalHtml = '';
+
+  if(rc.props.length===0) {
+    rentalHtml = `<p style="color:#6e6e73;font-size:14px;">Fill in rental property income and expenses above to see the impact here.</p>`;
+  } else {
+    const statusClass = rc.repQualifies?'unlocked':(rc.deductible<0?'partial':'locked');
+    const statusIcon  = rc.repQualifies?'✅':(rc.deductible<0?'⚡':'🔒');
+    rentalHtml = `
+      <div class="rental-status-box ${statusClass}">
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px;">${statusIcon} ${rc.repQualifies?'Full losses deductible (REP)':(rc.deductible<0?'Partial losses deductible':'Rental losses currently suspended')}
+        </div>
+        <div style="font-size:13px;line-height:1.7;">${rc.note}</div>
+      </div>
+      <div class="summary-row"><span class="summary-label">Total rental income</span><span class="summary-value good">${$fmt(rc.totalIncome)}</span></div>
+      <div class="summary-row"><span class="summary-label">Cash expenses (mortgage, tax, insurance, repairs)</span><span class="summary-value">${$fmt(rc.totalExpenses)}</span></div>
+      <div class="summary-row"><span class="summary-label">Depreciation (paper expense — no cash out)</span><span class="summary-value good">−${$fmt(rc.totalDepr)}</span></div>
+      <div class="summary-row"><span class="summary-label">Net rental income / (loss)</span><span class="summary-value ${rc.totalNet>=0?'warn':'good'}">${$fmt(rc.totalNet)}</span></div>
+      <div class="summary-row"><span class="summary-label">Currently deductible against W-2</span><span class="summary-value ${rc.deductible<0?'good':'warn'}">${rc.deductible<0?$fmt(Math.abs(rc.deductible))+' deduction':'$0 (suspended)'}</span></div>
+      ${rc.suspended<0?`<div class="summary-row"><span class="summary-label">Suspended losses (carried forward)</span><span class="summary-value">${$fmt(Math.abs(rc.suspended))}</span></div>`:''}`;
+
+    if(!rc.repQualifies && rc.totalNet<0) {
+      rentalHtml += `<div class="info-box" style="margin-top:14px;">
+        <strong>Depreciation is your hidden weapon:</strong> You're generating a paper loss of ${$fmt(rc.totalDepr)}/yr from depreciation alone — money you keep but show as a deduction on paper. While suspended now, these losses accumulate and will offset the depreciation recapture tax when you eventually sell. Every dollar of suspended loss is a deferred tax asset.
+      </div>`;
+    }
+  }
+  $e('r-rental-content').innerHTML = rentalHtml;
+
+  // Strategies
+  const list = $e('r-strategies');
+  list.innerHTML = '';
+  r.strategies.forEach(s=>{
+    const li = document.createElement('li');
+    li.className='strategy-item';
+    li.innerHTML=`
+      <div class="strategy-left">
+        <div class="strategy-name">${s.name}</div>
+        <div class="strategy-desc">${s.desc}</div>
+        <div class="strategy-cta">→ ${s.cta}</div>
+      </div>
+      <div class="strategy-right">
+        <div class="strategy-save">${$fmt(s.saving)}</div>
+        <div class="strategy-sub">est. savings</div>
+      </div>`;
+    list.appendChild(li);
+  });
+  if(!r.strategies.length) list.innerHTML='<li style="color:#6e6e73;font-size:14px;">All major sheltering options maxed — excellent position.</li>';
+
+  // DAF
+  const d = r.daf;
+  $e('r-daf-content').innerHTML = !d.worth
+    ? `<p style="font-size:14px;color:#6e6e73;">Your itemized deductions (${$fmt(d.stdDed-(d.stdDed - (d.bunchItemized - (d.amount||0))))} current) don't exceed the standard deduction even with bunching. DAF is still valuable for routing giving — you can fund it and disburse to charities (mosque, zakat, etc.) on your timeline without rushing year-end donations.</p>`
+    : `<div style="background:#e8f4ff;border-radius:12px;padding:18px 20px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#0071e3;margin-bottom:6px;">${d.usingStd?'Recommended bunching contribution':'Annual contribution'}</div>
+        <div style="font-size:32px;font-weight:800;color:#0071e3;">${$fmt(d.amount)}</div>
+        <div style="font-size:13px;color:#0071e3;opacity:.8;margin-top:3px;">${d.usingStd?'Fund 2 years of giving now — itemize this year, standard deduction next year':'You\'re itemizing — route all giving through DAF'}</div>
+        <div style="font-size:13px;color:#3d3d3f;margin-top:10px;line-height:1.7;">
+          Est. tax savings: <strong>${$fmt(d.saving)}</strong> at ${pct(d.marginalRate)} marginal rate.
+          ${d.unrealGains>0?`<br/><br/><strong>Donate appreciated stock, not cash.</strong> Transfer GOOGL or other appreciated shares to your DAF instead of cash — you avoid ${pct(d.cgRate)} capital gains tax on the gain AND get the full market value deduction. Double benefit.`:''}
+        </div>
+      </div>
+      ${d.dafBalance>0?`<p style="font-size:13px;color:#6e6e73;">Existing DAF balance: ${$fmt(d.dafBalance)} — growing tax-free. Grant to your charities (mosque, zakat orgs) on your own timeline. No year-end rush.</p>`:''}`;
+}
+
+// ══ FORM EVENTS ════════════════════════════════════════════════════
+function onYearChange() {
+  const y = parseInt($v('tax_year'))||2026;
+  $e('limit-401k').textContent = `Limit: ${$fmt(LIMIT_401K[y]||23500)}`;
+  $e('limit-hsa').textContent  = `Limit: ${$fmt(LIMIT_HSA[y]||8550)} (family)`;
+  const plan = y>=2025;
+  document.querySelector(`input[name="mode"][value="${plan?'plan':'actual'}"]`).checked=true;
+  onModeChange(); updateLimits();
+}
+function onModeChange() {
+  const plan = document.querySelector('input[name="mode"]:checked').value==='plan';
+  $e('section-planning').style.display = plan?'':'none';
+  $e('section-actual').style.display   = plan?'none':'';
+}
+
+$e('tax-form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $e('submit-btn').disabled=true;
+  $e('status').textContent='Calculating…';
+
+  const r = calculate();
+  render(r);
+  $e('result').style.display='block';
+  $e('result').scrollIntoView({behavior:'smooth',block:'start'});
+  $e('status').textContent='';
+
+  // Supabase save
+  const url = $e('cfg-url').value.trim();
+  const key = $e('cfg-key').value.trim();
+  const ss  = $e('save-status');
+  if(!key){ ss.textContent='⚠️ No Supabase key — not saved.'; $e('submit-btn').disabled=false; return; }
+
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const payload = {
+    subject:'Umair', tax_year:r.year, filing_status:r.status, mode,
+    wages: mode==='plan'?($n('projected_wages')||null):($n('wages_actual')||null),
+    base_salary:$n('base_salary')||null, rsu_ytd:$n('rsu_ytd')||null,
+    rsu_remaining:$n('rsu_remaining')||null, bonus:$n('bonus')||null,
+    contrib_401k:$n('contrib_401k')||null, contrib_hsa:$n('contrib_hsa')||null,
+    contrib_fsa:$n('contrib_fsa')||null,
+    cap_gains_lt:$n('cap_gains_lt')||null, cap_gains_st:$n('cap_gains_st')||null,
+    dividends_ordinary:$n('dividends_ordinary')||null,
+    mortgage_interest:$n('mortgage_interest')||null,
+    property_tax:$n('property_tax')||null, state_tax_withheld:$n('state_tax')||null,
+    charitable_annual:$n('charitable_annual')||null,
+    unrealized_lt_gains:$n('unrealized_lt_gains')||null,
+    daf_balance:$n('daf_balance')||null,
+    p1_income:$n('p1_income')||null, p1_expenses:($n('p1_mortgage')+$n('p1_prop_tax')+$n('p1_insurance')+$n('p1_repairs')+$n('p1_fees')+$n('p1_other'))||null,
+    p2_income:$n('p2_income')||null, p2_expenses:($n('p2_mortgage')+$n('p2_prop_tax')+$n('p2_insurance')+$n('p2_repairs')+$n('p2_fees')+$n('p2_other'))||null,
+    hours_umair:$n('hours_umair')||null, hours_huma:$n('hours_huma')||null,
+    rep_qualifies: r.rental.repQualifies,
+    agi_estimated:r.agi, taxable_income_estimated:r.taxableIncome,
+    marginal_bracket:r.marginalRate, federal_tax_estimated:r.federalTax,
+    rental_net:r.rental.totalNet, rental_suspended:r.rental.suspended,
+    daf_recommended:r.daf.amount||null, recorded_at:new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch(`${url}/rest/v1/finance_tax_profile`,{
+      method:'POST',
+      headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+      body:JSON.stringify(payload),
+    });
+    if(!res.ok) throw new Error(await res.text());
+    ss.textContent='✅ Saved to Open Brain.';
+  } catch(err){
+    ss.textContent=`⚠️ Save failed: ${err.message}`;
+    ss.className='status-msg error';
+  }
+  $e('submit-btn').disabled=false;
+});
+
+// Init
+onYearChange();
+</script>
+</body>
+</html>

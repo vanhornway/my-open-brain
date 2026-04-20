@@ -1,0 +1,15 @@
+{
+  "name": "tax-ingest",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "ingest": "node ingest-tax-doc.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.0",
+    "canvas": "^3.2.2",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^5.5.207",
+    "pdfkit": "^0.18.0"
+  }
+}
