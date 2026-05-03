@@ -54,7 +54,17 @@ function prompt(question) {
 }
 
 function openBrowser(url) {
-  exec(`open "${url}"`);
+  // Try macOS first, then Linux, then just print the URL
+  const os = require("os");
+  if (os.platform() === "darwin") {
+    exec(`open "${url}"`);
+  } else if (os.platform() === "linux") {
+    exec(`xdg-open "${url}"`, (err) => {
+      if (err) console.log(`\n📋 Copy this URL into your browser:\n${url}\n`);
+    });
+  } else {
+    console.log(`\n📋 Copy this URL into your browser:\n${url}\n`);
+  }
 }
 
 // ── TOKEN MANAGEMENT ──────────────────────────────────────
