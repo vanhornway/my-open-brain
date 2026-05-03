@@ -38,7 +38,7 @@ const today = new Date();
 const defaultFrom = new Date(today);
 defaultFrom.setDate(today.getDate() - 2);
 
-const fromDate = fromIdx !== -1 ? args[fromIdx + 1] : isoDate(defaultFrom);
+let fromDate = fromIdx !== -1 ? args[fromIdx + 1] : null;
 const toDate = toIdx !== -1 ? args[toIdx + 1] : isoDate(today);
 const INTRADAY = args.includes("--intraday");
 
@@ -364,7 +364,26 @@ async function fetchIntradayHRSaturdays(token, from, to) {
   return result;
 }
 
-// ── SUPABASE UPSERT ───────────────────────────────────────
+// ── SUPABASE ──────────────────────────────────────────────
+async function getLastFitbitDate() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/health_metrics?select=recorded_at&source=eq.fitbit&order=recorded_at.desc&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    }
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data.length) return null;
+
+  const lastDate = new Date(data[0].recorded_at);
+  lastDate.setDate(lastDate.getDate() - 1);
+  return isoDate(lastDate);
+}
+
 async function upsertBatch(rows) {
   if (!rows.length) return;
 
@@ -390,6 +409,18 @@ async function main() {
   if (!SUPABASE_SERVICE_ROLE_KEY) {
     console.error("❌ Missing SUPABASE_SERVICE_ROLE_KEY. Run: export SUPABASE_SERVICE_ROLE_KEY=...");
     process.exit(1);
+  }
+
+  if (!fromDate) {
+    console.log("📍 Checking Supabase for last Fitbit data...");
+    const lastDate = await getLastFitbitDate();
+    if (lastDate) {
+      fromDate = lastDate;
+      console.log(`   Found data up to ${lastDate}, continuing from there\n`);
+    } else {
+      fromDate = isoDate(defaultFrom);
+      console.log(`   No prior data found, defaulting to last 2 days\n`);
+    }
   }
 
   const tokens = await getValidTokens();

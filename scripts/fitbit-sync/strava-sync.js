@@ -196,6 +196,17 @@ async function fetchActivityDetail(accessToken, activityId) {
 }
 
 // ── SUPABASE ──────────────────────────────────────────────
+async function getLastHikeDate() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/hiking_history?select=hike_date&order=hike_date.desc&limit=1`,
+    { headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data.length) return null;
+  return data[0].hike_date;
+}
+
 async function fetchHikes(targetDate = null) {
   let url = `${SUPABASE_URL}/rest/v1/hiking_history?select=id,hike_date,hike_code,trail_name,attended&order=hike_date.asc&limit=500`;
   if (targetDate) url += `&hike_date=eq.${targetDate}`;
@@ -348,12 +359,28 @@ async function main() {
   }
 
   if (DRY_RUN) console.log("🔍 DRY RUN — no changes will be written\n");
-  if (DATE_ARG) console.log(`📅 Date filter: ${DATE_ARG}\n`);
+
+  let dateToFetch = DATE_ARG;
+  if (!dateToFetch) {
+    console.log("📍 Checking Supabase for last hike date...");
+    const lastDate = await getLastHikeDate();
+    if (lastDate) {
+      dateToFetch = lastDate;
+      console.log(`   Found hikes up to ${lastDate}, checking from there\n`);
+    } else {
+      const today = new Date();
+      const twoDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+      dateToFetch = twoDaysAgo.toISOString().split('T')[0];
+      console.log(`   No prior hikes found, defaulting to last 2 days (from ${dateToFetch})\n`);
+    }
+  } else {
+    console.log(`📅 Date filter: ${DATE_ARG}\n`);
+  }
 
   const tokens = await getValidTokens();
 
   console.log("Fetching your Strava activities...");
-  const myActivities = await fetchAllMyActivities(tokens.access_token, DATE_ARG);
+  const myActivities = await fetchAllMyActivities(tokens.access_token, dateToFetch);
   console.log(`  Found ${myActivities.length} activities\n`);
 
   // Build date → my activities map
@@ -365,7 +392,7 @@ async function main() {
   }
 
   console.log("Fetching hikes from Supabase...");
-  const hikes = await fetchHikes(DATE_ARG);
+  const hikes = await fetchHikes(dateToFetch);
   console.log(`  Found ${hikes.length} hikes\n`);
 
   let confirmedByStrava = 0;
