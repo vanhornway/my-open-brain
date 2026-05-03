@@ -54,15 +54,14 @@ function prompt(question) {
 }
 
 function openBrowser(url) {
-  // Try macOS first, then Linux, then just print the URL
+  // Always print the URL
+  console.log(`\n📋 Open this URL in your browser:\n${url}\n`);
+
+  // Try to open browser (macOS/Linux)
   if (process.platform === "darwin") {
     exec(`open "${url}"`);
   } else if (process.platform === "linux") {
-    exec(`xdg-open "${url}"`, (err) => {
-      if (err) console.log(`\n📋 Copy this URL into your browser:\n${url}\n`);
-    });
-  } else {
-    console.log(`\n📋 Copy this URL into your browser:\n${url}\n`);
+    exec(`xdg-open "${url}"`, () => {});
   }
 }
 
