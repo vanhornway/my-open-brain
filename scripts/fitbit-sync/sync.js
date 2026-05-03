@@ -321,11 +321,11 @@ async function fetchIntradayHRSaturdays(token, from, to) {
       const dataset = data?.["activities-heart-intraday"]?.dataset ?? [];
 
       if (dataset.length > 0) {
-        // 6:30 AM = 390 mins, 10:30 AM = 630 mins
+        // 6:15 AM = 375 mins, 10:30 AM = 630 mins
         const morning = dataset.filter(pt => {
           const [h, m] = pt.time.split(":").map(Number);
           const totalMins = h * 60 + m;
-          return totalMins >= 390 && totalMins <= 630;
+          return totalMins >= 375 && totalMins <= 630;
         });
 
         const ZONE2_THRESHOLD = 120; // ~Zone 2+ (~120+ bpm)
@@ -505,7 +505,7 @@ async function main() {
           date_label: label,
           sustained_block_minutes: hr.sustained_block_minutes,
           first_rise_time: hr.first_rise_time,
-          window: "06:30-10:30",
+          window: "06:15-10:30",
           zone2_threshold_bpm: 120,
         },
         notes: null,
