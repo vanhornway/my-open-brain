@@ -34,16 +34,21 @@ const fromIdx = args.indexOf("--from");
 const toIdx = args.indexOf("--to");
 const DRY_RUN = args.includes("--dry");
 
-const today = new Date();
-const sevenDaysAgo = new Date(today);
-sevenDaysAgo.setDate(today.getDate() - 7);
-
 function isoDate(d) {
   return d.toISOString().split("T")[0];
 }
 
-const fromDate = fromIdx !== -1 ? args[fromIdx + 1] : isoDate(sevenDaysAgo);
-const toDate = toIdx !== -1 ? args[toIdx + 1] : isoDate(today);
+const today = new Date();
+
+let fromDate, toDate;
+toDate = toIdx !== -1 ? args[toIdx + 1] : isoDate(today);
+
+// If --from is specified, use it; otherwise will be determined from Supabase
+if (fromIdx !== -1) {
+  fromDate = args[fromIdx + 1];
+} else {
+  fromDate = null; // Will be set by querying Supabase
+}
 
 // ── HELPERS ───────────────────────────────────────────────
 function prompt(question) {
@@ -174,6 +179,26 @@ async function whoopGet(accessToken, path) {
 }
 
 // ── SUPABASE ──────────────────────────────────────────────
+async function getLastWhoopDate() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/health_metrics?select=recorded_at&source=eq.whoop&order=recorded_at.desc&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    }
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data.length) return null;
+
+  // Return the date, minus 1 day as buffer to catch any missed data
+  const lastDate = new Date(data[0].recorded_at);
+  lastDate.setDate(lastDate.getDate() - 1);
+  return isoDate(lastDate);
+}
+
 async function upsertHealthMetrics(rows) {
   if (DRY_RUN || !rows.length) return;
 
@@ -291,6 +316,22 @@ async function main() {
   }
 
   if (DRY_RUN) console.log("🔍 DRY RUN — no changes will be written\n");
+
+  // Determine fromDate from Supabase if not specified
+  if (!fromDate) {
+    console.log("📍 Checking Supabase for last Whoop data...");
+    const lastDate = await getLastWhoopDate();
+    if (lastDate) {
+      fromDate = lastDate;
+      console.log(`   Found data up to ${lastDate}, continuing from there\n`);
+    } else {
+      // No prior data, default to last 7 days
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      fromDate = isoDate(sevenDaysAgo);
+      console.log(`   No prior data found, defaulting to last 7 days\n`);
+    }
+  }
 
   console.log(`📅 Fetching Whoop data from ${fromDate} → ${toDate}\n`);
 
